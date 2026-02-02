@@ -7,7 +7,7 @@ const app = new Hono();
 
 // Enable CORS for frontend
 app.use('/*', cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: '*', // Allow all origins for public API or list specific domains
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type'],
 }));
