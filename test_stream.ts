@@ -1,42 +1,45 @@
+import axios from 'axios';
+
+const BASE_URL = 'https://streamed.pk/api';
+const HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Referer': 'https://streamed.pk/',
+    'Origin': 'https://streamed.pk'
+};
 
 async function testStream() {
-    const baseUrl = 'https://anime-peach-eight.vercel.app/api';
-
-    // 1. Get Trending to find a valid anime ID
-    console.log('Fetching trending...');
+    console.log('--- Testing Upstream Stream Fetching ---');
     try {
-        const trendRes = await fetch(`${baseUrl}/trending`);
-        const trendData = await trendRes.json();
+        const matchesRes = await axios.get(`${BASE_URL}/matches/all-today`, { headers: HEADERS });
+        const matches = matchesRes.data;
 
-        if (!trendData.results?.trending?.length) {
-            console.error('No trending anime found');
-            return;
+        if (matches.length > 0) {
+            // Find the Al-Riyadh match or fallback to first
+            const match = matches.find((m: any) => m.title.includes('Al-Riyadh')) || matches[0];
+            console.log(`Match: ${match.title}`);
+
+            if (match.sources && match.sources.length > 0) {
+                console.log(`Found ${match.sources.length} sources. Testing all...`);
+
+                for (const source of match.sources) {
+                    console.log(`\n--- Testing Source: ${source.source} ---`);
+                    const streamUrl = `${BASE_URL}/stream/${source.source}/${source.id}`;
+                    try {
+                        const streamRes = await axios.get(streamUrl, { headers: HEADERS });
+                        console.log('Response:', JSON.stringify(streamRes.data, null, 2));
+                    } catch (e: any) {
+                        console.log(`Failed to fetch stream: ${e.message}`);
+                    }
+                }
+            } else {
+                console.log("No sources for this match.");
+            }
+        } else {
+            console.log("No matches found.");
         }
 
-        const anime = trendData.results.trending[0];
-        console.log(`Found anime: ${anime.title.english || anime.title} (ID: ${anime.id})`);
-
-        // 2. Get Episodes
-        console.log(`Fetching episodes for ${anime.id}...`);
-        const epRes = await fetch(`${baseUrl}/episodes/${anime.id}`);
-        const epData = await epRes.json();
-
-        if (!epData.results?.episodes?.length) {
-            console.error('No episodes found');
-            return;
-        }
-
-        const episode = epData.results.episodes[0];
-        console.log(`Found episode: ${episode.number} (ID: ${episode.id})`);
-
-        // 3. Get Stream
-        console.log(`Fetching stream for ${episode.id}...`);
-        const streamRes = await fetch(`${baseUrl}/stream?id=${episode.id}&server=hd-1`);
-        const streamData = await streamRes.json();
-        console.log('Stream response:', JSON.stringify(streamData, null, 2));
-
-    } catch (e) {
-        console.error('Error:', e);
+    } catch (error: any) {
+        console.error('Error:', error.message);
     }
 }
 
