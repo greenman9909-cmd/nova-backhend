@@ -9,6 +9,7 @@
     "@consumet/extensions": "^1.8.8",
     "@supabase/supabase-js": "^2.93.1",
     "axios": "^1.13.6",
+    "got-scraping": "^4.2.1",
     "hono": "^4.0.0"
   },
   "devDependencies": {

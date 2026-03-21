@@ -6,6 +6,9 @@
 [functions]
   node_bundler = "esbuild"
 
+[functions."*"]
+  external = ["got-scraping"]
+
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/api/:splat"
